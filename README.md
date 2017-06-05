@@ -1,27 +1,64 @@
 # csdiff
 side by side diff tool with colorization and regular expression support for filtering
 
-_Watch this space - still under development_
+## Contents
+1. [Introduction](#introduction)
+2. [Using It](#using)
+3. [Colors](#colors)
+4. [Command Line Options](#cliopts)
+5. [Installation](#installation)
+6. [Modification](#modification)
+7. [About](#about)
 
-Command line tool that does a side by side diff of two text files
-with regular expression filtering and ANSI terminal colorization.
+<a name="introduction"></a>
+## Introduction
+Command line tool that does a side by side diff of two text files with regular expression filtering
+and [ANSI terminal colorization](https://en.wikipedia.org/wiki/ANSI_escape_code).
 
-It is useful for analyzing text files that have patterns like
-timestamps that can easily be filtered out.
+It is useful for analyzing text files that have patterns like timestamps that can easily be filtered out.
 
-Diffs.
+<a name="using"></a>
+## Using It
+The tool is very similar to sdiff, [wdiff](https://www.gnu.org/software/wdiff/) or diff. You specify two files or substitions and it outputs the differences between them using ANSI
+terminal colorization to highlight the differences. 
+
+You can specify replacement patterns to mask or filter differences that you don't care about,
+like line numbers or time stamps. It is very similar to using process substitution in sdiff
+but the regular expression patterns are defined by go. Doing it with sdiff would look something
+like this (with no colorization).
+```bash
+$ sdiff \
+    <(cat test/td03.txt | sed -E -e 's@[0-9][0-9]:[0-9][0-9]:[0-9][0-9]@HH:MM:SS@g') \
+    <(cat test/td04.txt | sed -E -e 's@[0-9][0-9]:[0-9][0-9]:[0-9][0-9]@HH:MM:SS@g' )
+```
+
+The default colorization is very simple, a light grey background is used to highlight differences.
+A background color was chosen so that it would be easy to see extra spaces.
+You can customize the colors.  
+
+Here is an example that shows two files whose content only differ by a time stamp.
 ```bash
 $ bin/Darwin-x86_64/csdiff test/td03.txt test/td04.txt
 ```
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://cloud.githubusercontent.com/assets/2991242/26766790/21bf7818-494d-11e7-88c2-84eea6022a0e.png" alt="example-1">
 
-Filter out timestamps.
+You can see the difference in the vertical, light grey stripes.
+
+Here is an example that shows how to use the replacement option (-r) to ignore the timestamp differences. As you can see, the go regular expressions are a bit more concise than the previous `sed` example.
 ```bash
-$ bin/Darwin-x86_64/csdiff -r '\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}' 'yyyy-mm-dd HH:MM:SS' test/td03.txt test/td04.txt
+$ bin/Darwin-x86_64/csdiff \
+    -r '\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}' 'yyyy-mm-dd HH:MM:SS' \
+    test/td03.txt test/td04.txt
 ```
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://cloud.githubusercontent.com/assets/2991242/26766793/2d0d2530-494d-11e7-849b-a03bec7a1a5c.png" alt="example-2">
 
-Customize colors.
+Now there are no differences because they were filtered out.
+
+<a name="colors"></a>
+## Colors
+You have the option of customizing the output colors based on the type of data.
+
+Here is an example of how that is done.
 
 ```bash
 $ bin/Darwin-x86_64/csdiff -c cd=bold,fgRed \
@@ -34,5 +71,214 @@ $ bin/Darwin-x86_64/csdiff -c cd=bold,fgRed \
 ```
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://cloud.githubusercontent.com/assets/2991242/26766795/32be864a-494d-11e7-9b37-1554c4821494.png" alt="example-3">
 
-TODO
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://cloud.githubusercontent.com/assets/2991242/26766798/38e82800-494d-11e7-8e0e-e429322d993e.png" alt="example-4">
+Contrast that with the default below and you can see the differences. There are many more colors in the first example.
+
+```bash
+$ bin/Darwin-x86_64/csdiff test/td01.txt test/td02.txt
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://cloud.githubusercontent.com/assets/2991242/26789827/5df9308e-49c6-11e7-9c3e-4426b5f31f7e.png" alt="example-4">
+
+### Specifying Color
+Color is specified by defining a color map for colorizable entities. The syntax looks like this.
+
+```
+   -c cd=bold,fgRed
+   ^  ^ ^^    ^
+   |  | ||    +--- Another colorization value or text modifier, you can specify as many as you like,
+   |  | |+-------- A colorization value or text modifier (described below).
+   |  | +--------- Equals sign that separates the tag from the attributes.
+   |  +----------- Tag (described below)
+   +-------------- Option that specifies a color map.
+```
+
+Note that you can have multiple color maps on the same line. You separate them with a semi-colon like this.
+
+```
+   -c 'cd=bold,fgRed;cm=bold,fgBlue'
+```
+
+### Colorizable Entities (Tags)
+These tags describe the data that can be colored.
+
+| Entity        | Abbreviation | Description |
+| ------------- | ------------ | ----------- |
+| CharsMatch    | cm  | Color of characters that match on both lines when there are differences. |
+| CharsDiff     | cd  | Color of characters that differ on both lines. |
+| LineMatch     | lm  | Color of characters when both lines match. |
+| LeftLineOnly  | llo | Color of characters when there is no right line. |
+| RightLineOnly | rlo | Color of characters when there is no left line. |
+| Symbol        | sym | Color of the sdiff symbol in the middle. The symbol is &vert;, &lt;, &gt; or nothing. |
+
+### Symbols
+These are the symbols that csdiff inserts between the lines.
+
+| Symbol | Description |
+| :----: | ----------- |
+| &vert; | There are differences between the two lines. |
+| &lt;   | There is no matching right line, the left line was inserted. |
+| &gt;   | There is no matching left line, the right line was inserted. |
+| &nbsp; | There is no difference between the lines. |
+
+### Text (Foreground) Colorization Values
+These are the values that you can specify to color text.
+It is a subset of the ANSI terminal colors that should work
+everywhere.
+They are *not* case insensitive.
+
+1. fgDefault
+2. fgBlack
+3. fgBlue
+4. fgCyan
+5. fgGreen
+6. fgMagenta
+7. fgRed
+8. fgYellow
+9. fgWhite
+10. fgLightBlue
+11. fgLightCyan
+12. fgLightGreen
+13. fgLightGrey
+14. fgLightMagenta
+15. fgLightRed
+16. fgLightYellow
+17. fgDarkGrey
+
+### Background Colorization Values
+These are the values that you can specify for the background.
+It is a subset of the ANSI terminal colors that should work
+everywhere.
+They are *not* case sensitive.
+
+1. bgDefault
+2. bgBlack
+3. bgBlue
+4. bgCyan
+5. bgGreen
+6. bgMagenta
+7. bgRed
+8. bgYellow
+9. bgLightBlue
+10. bgLightCyan
+11. bgLightGreen
+12. bgLightGrey
+13. bgLightMagenta
+14. bgLightRed
+15. bgLightYellow
+16. bgDarkGrey
+
+### Text Modifiers
+These are the values that you can specify to change how the text is displayed.
+They are *not* case sensitive.
+
+| Tag       | Description |
+| --------- | ----------- |
+| bold      | Make the text bold. |
+| dim       | Make the text dim. |
+| underline | Underline the text. |
+| blink     | Blink. |
+| reverse   | Reverse the foreground and background. |
+| reset     | Reset the colors and modifiers. |
+
+The data types are shown in the table below
+
+<a name="cliopts"></a>
+## Command Line Options
+The command line options are best accessed by looking at the inline help because they may change
+over time but these are the command line options available in 0.4.x.
+
+| Long Option           | Short Option    | Brief Description |
+| --------------------- | --------------- | ----------------- 
+| --color-map COLOR_MAP | --c COLOR_MAP   | Specify a color map for a tag. |
+| --clear               | NONE            | Clear the default color map. |
+| --config FILE         | NONE            | Specify a color map config file. |
+| --help                | -h              | Inline help. |
+| --diff                | -d              | Do a traditional diff. Useful for very long lines. |
+| --no-color            | -n              | Turn off colorization. Used for testing. |
+| --replace PATT REP    | -r PATT REP     | Specify a pattern to replace. Can be specified multiple times. |
+| --suppress            | -s              | Suppress common lines. |
+| --version             | -V              | Print the program version and exit. |
+| --width NUM           | -w NUM          | The width of the output. The default is the width of the terminal. |
+
+<a name="installation"></a>
+## Installation
+
+Just download the tar image for your system and extract the executable.
+
+<a name="modification"></a>
+## Modification (docker)
+Here is how you check out the source to modify it.
+If you make changes or implement bug fixes that you think might be useful,
+please let me know so that I can incorporate them.
+
+```bash
+$ git clone https://github.com/jlinoff/csdiff.git
+```
+
+### Dockerfile
+Note that I used the following docker file to Dockerfile to create the linux image.
+
+```
+# This docker file creates a go compilation container that can be used
+# to cross-compile go for linux on any platform that supports docker.
+#
+#   $ cd csdiff
+#   $ docker run -it --rm -v $(pwd):/opt/go/project goco make
+#
+# To create it. Note that gover is an ARG that defines the version of
+# go that you want to build. This example shows how to build it for go-1.8.3.
+#
+#   $ docker build --build-arg gover=1.8.3 -f Dockerfile -t goco:1.8.3 -t goco:latest .
+FROM centos:latest
+
+RUN yum clean all && yum update -y && yum install -y git make
+
+ARG gover
+ENV GO_VERSION=$gover
+ENV GOROOT=/opt/go/latest
+ENV GOPATH=/opt/go/project
+ENV GO_PROG=/opt/go/latest/bin/go
+
+# Setup the volume.
+RUN mkdir -p ${GOPATH}
+VOLUME ${GOPATH}
+
+# Install go in /opt/go
+RUN mkdir -p /opt/go/${GO_VERSION}/dl && \
+    cd /opt/go/${GO_VERSION}/dl && \
+    curl -k -O -L https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz && \
+    cd /opt/go/${GO_VERSION} && \
+    tar zxf dl/go${GO_VERSION}.linux-amd64.tar.gz && \
+    ln -s /opt/go/${GO_VERSION}/go /opt/go/latest && \
+    ${GO_PROG} version
+    
+# Install golint
+RUN cd /opt/go/${GO_VERSION}/dl && \
+    GOPATH=/opt/go/${GO_VERSION}/dl ${GOROOT}/bin/go get -u github.com/golang/lint/golint && \
+    cp bin/* ${GOROOT}/bin
+
+# Wrapper for the go command that makes it
+# natural for the user to run something like
+# docker run -it --rm -v $(pwd):/opt/go/project goco go build myprog.go
+RUN /bin/echo '#!/bin/bash'                           > /opt/go/goco.sh && \
+    /bin/echo 'export PATH="${GOROOT}/bin:${PATH}"'  >> /opt/go/goco.sh && \
+    /bin/echo 'cd /opt/go/project'                   >> /opt/go/goco.sh && \
+    /bin/echo '$*'                                   >> /opt/go/goco.sh && \
+    chmod a+rx /opt/go/goco.sh && \
+    /opt/go/goco.sh go version
+
+# Run in go environment.
+ENTRYPOINT ["/opt/go/goco.sh"]
+CMD ["version"]
+```
+
+<a name="about"></a>
+## About
+
+I originally developed this because I was working on a Mac and FileMerge did not provide line numbers
+but then added regular expression filtering which also made it useful on linux.
+
+This tool was written in go-1.8.3.
+
+
+
+
