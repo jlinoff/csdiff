@@ -291,4 +291,6 @@ but then added regular expression filtering which also made it useful on linux.
 This tool was written in go-1.8.3 using the [atom](https://atom.io/) and [emacs](https://emacsformacosx.com/)
 editors on Mac OSX 10.12.5.
 
-This tool has been tested on Mac OS X 10.12.5, CentOS 7 and CentOS 6.
+It has been tested on Mac OS X 10.12.5, CentOS 7 and CentOS 6.
+
+Suggestions and improvements are greatly appreciated.
