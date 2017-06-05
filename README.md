@@ -1,4 +1,6 @@
 # csdiff
+[![Releases](https://img.shields.io/github/release/jlinoff/csdiff.svg?style=flat)](https://github.com/jlinoff/csdiff/releases)
+
 side by side diff tool with colorization and regular expression support for filtering
 
 ## Contents
