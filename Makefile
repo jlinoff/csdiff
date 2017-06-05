@@ -21,11 +21,35 @@ PROG = $(BIN_DIR)/csdiff
 
 all: $(PROG) test
 
+# Make the release executables.
+rel: rel/csdiff-mac.zip rel/csdiff-x64.tar.gz
+
 build: $(PROG)
 
 clean:
 	find . -type f -name '*~' -delete
-	rm -rf bin pkg
+	rm -rf bin pkg rel
+
+# Package the Mac executable into a zip file for release.
+rel/csdiff-mac.zip: bin/Darwin-x86_64/csdiff
+	@[ ! -d $(dir $@) ] && mkdir -p $(dir $@) || true
+	@rm -f $@
+	cp $< $(dir $@)/csdiff
+	@chmod a+x $(dir $@)/csdiff
+	@cd $(dir $@) && zip -r $(notdir $@) csdiff
+	@rm -f $(dir $@)/csdiff
+	@unzip -l $@
+
+# Package the Linux executable into a tar file for release.
+rel/csdiff-x64.tar.gz: bin/Linux-x86_64/csdiff
+	@[ ! -d $(dir $@) ] && mkdir -p $(dir $@) || true
+	@rm -f $@
+	@rm -f $(dir $@)/csdiff
+	cp $< $(dir $@)/csdiff
+	@cd $(dir $@) && tar zcvf $(notdir $@) csdiff
+	@chmod a+x $(dir $@)/csdiff
+	@rm -f $(dir $@)/csdiff
+	@tar ztvf $@
 
 $(PROG): jlinoff/csdiff
 
