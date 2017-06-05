@@ -237,7 +237,8 @@ $ git clone https://github.com/jlinoff/csdiff.git
 ```
 
 ### Dockerfile
-Note that I used the following docker file to Dockerfile to create the linux image.
+Note that I used the following [Dockerfile](https://docs.docker.com/engine/reference/builder/)
+to create the linux image because I was working on a Mac.
 
 ```
 # This docker file creates a go compilation container that can be used
