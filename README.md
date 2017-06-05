@@ -269,7 +269,7 @@ RUN /bin/echo '#!/bin/bash'                           > /opt/go/goco.sh && \
 
 # Run in go environment.
 ENTRYPOINT ["/opt/go/goco.sh"]
-CMD ["version"]
+CMD ["/opt/go/latest/bin/go", "version"]
 ```
 
 ### Using the goco docker image
