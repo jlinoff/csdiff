@@ -14,7 +14,7 @@ side by side diff tool with colorization and regular expression support for filt
 
 <a name="introduction"></a>
 ## Introduction
-Command line tool that does a side by side diff of two text files with regular expression filtering
+Command line tool that does a side by side diff of two text files with [regular expression](https://github.com/google/re2/wiki/Syntax) filtering
 and [ANSI terminal colorization](https://en.wikipedia.org/wiki/ANSI_escape_code).
 
 It is useful for analyzing text files that have patterns like timestamps that can easily be filtered out.
