@@ -204,8 +204,27 @@ over time but these are the command line options available in 0.4.x.
 
 <a name="installation"></a>
 ## Installation
-Just download the tar image for your system and extract the executable. You can use it directly
+Just download the tar or zip image for your system and extract the executable. You can use it directly
 or copy it.
+
+### Linux Example
+```bash
+$ curl -s -k -L -O https://github.com/jlinoff/csdiff/releases/download/v0.4.2/csdiff-x64.tar.gz
+$ tar ztvf csdiff-x64.tar.gz 
+-rwxr-xr-x  1 jlinoff 1784424920 2319784 Jun  5 11:02 csdiff
+```
+
+### Mac Example
+```bash
+$ curl -s -k -L -O https://github.com/jlinoff/csdiff/releases/download/v0.4.2/csdiff-mac.zip
+$ unzip -l csdiff-mac.zip
+Archive:  csdiff-mac.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+  2301184  06-05-2017 11:02   csdiff
+---------                     -------
+  2301184                     1 file
+```
 
 <a name="modification"></a>
 ## Modification (docker)
