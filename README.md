@@ -19,7 +19,7 @@ It is useful for analyzing text files that have patterns like timestamps that ca
 
 <a name="using"></a>
 ## Using It
-The tool is very similar to sdiff, [wdiff](https://www.gnu.org/software/wdiff/) or diff. You specify two files or substitions and it outputs the differences between them using ANSI
+The tool is very similar to sdiff, [wdiff](https://www.gnu.org/software/wdiff/) or diff. You specify two files or substitutions and it outputs the differences between them using ANSI
 terminal colorization to highlight the differences. 
 
 You can specify replacement patterns to mask or filter differences that you don't care about,
