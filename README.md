@@ -42,7 +42,7 @@ $ bin/Darwin-x86_64/csdiff test/td03.txt test/td04.txt
 ```
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://cloud.githubusercontent.com/assets/2991242/26766790/21bf7818-494d-11e7-88c2-84eea6022a0e.png" alt="example-1">
 
-You can see the difference in the vertical, light grey stripes.
+You can see the differences in the vertical, light grey stripes.
 
 Here is an example that shows how to use the replacement option (-r) to ignore the timestamp differences. As you can see, the go regular expressions are a bit more concise than the previous `sed` example.
 ```bash
@@ -52,11 +52,12 @@ $ bin/Darwin-x86_64/csdiff \
 ```
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://cloud.githubusercontent.com/assets/2991242/26766793/2d0d2530-494d-11e7-849b-a03bec7a1a5c.png" alt="example-2">
 
-Now there are no differences because they were filtered out.
+Now there are no differences because they were masked.
 
 <a name="colors"></a>
 ## Colors
-You have the option of customizing the output colors based on the type of data.
+You have the option of customizing the output colors based on the type of data by specifying colormaps for different
+types of output.
 
 Here is an example of how that is done.
 
@@ -71,12 +72,13 @@ $ bin/Darwin-x86_64/csdiff -c cd=bold,fgRed \
 ```
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://cloud.githubusercontent.com/assets/2991242/26766795/32be864a-494d-11e7-9b37-1554c4821494.png" alt="example-3">
 
-Contrast that with the default below and you can see the differences. There are many more colors in the first example.
-
+Contrast that with the default below and you can see the differences.
 ```bash
 $ bin/Darwin-x86_64/csdiff test/td01.txt test/td02.txt
 ```
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://cloud.githubusercontent.com/assets/2991242/26789827/5df9308e-49c6-11e7-9c3e-4426b5f31f7e.png" alt="example-4">
+
+As you can see, there are many more colors in the first example.
 
 ### Specifying Color
 Color is specified by defining a color map for colorizable entities. The syntax looks like this.
@@ -91,8 +93,7 @@ Color is specified by defining a color map for colorizable entities. The syntax 
    +-------------- Option that specifies a color map.
 ```
 
-Note that you can have multiple color maps on the same line. You separate them with a semi-colon like this.
-
+Note that you can have multiple color maps on the same line by separating them with a semi-colon as show below.
 ```
    -c 'cd=bold,fgRed;cm=bold,fgBlue'
 ```
@@ -110,7 +111,7 @@ These tags describe the data that can be colored.
 | Symbol        | sym | Color of the sdiff symbol in the middle. The symbol is &vert;, &lt;, &gt; or nothing. |
 
 ### Symbols
-These are the symbols that csdiff inserts between the lines.
+These are the symbols that csdiff inserts between the lines. They cannot be changed.
 
 | Symbol | Description |
 | :----: | ----------- |
@@ -123,7 +124,7 @@ These are the symbols that csdiff inserts between the lines.
 These are the values that you can specify to color text.
 It is a subset of the ANSI terminal colors that should work
 everywhere.
-They are *not* case insensitive.
+They are *not* case sensitive.
 
 1. fgDefault
 2. fgBlack
@@ -201,8 +202,8 @@ over time but these are the command line options available in 0.4.x.
 
 <a name="installation"></a>
 ## Installation
-
-Just download the tar image for your system and extract the executable.
+Just download the tar image for your system and extract the executable. You can use it directly
+or copy it.
 
 <a name="modification"></a>
 ## Modification (docker)
@@ -271,14 +272,19 @@ ENTRYPOINT ["/opt/go/goco.sh"]
 CMD ["version"]
 ```
 
+### Using the goco docker image
+This is how you use the goco docker image to compile csdiff for linux.
+```bash
+$ cd csdiff
+$ docker run -it --rm -v $(pwd):/opt/go/project goco make
+```
+The binary will appear in bin/Linux-x86_64/csdiff.
+
 <a name="about"></a>
 ## About
 
 I originally developed this because I was working on a Mac and FileMerge did not provide line numbers
 but then added regular expression filtering which also made it useful on linux.
 
-This tool was written in go-1.8.3.
-
-
-
-
+This tool was written in go-1.8.3 using the [atom](https://atom.io/) and [emacs](https://emacsformacosx.com/)
+editors on Mac OSX 10.12.5.
