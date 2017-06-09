@@ -35,7 +35,13 @@ darwin:
 linux:
 	@go version
 	GOOS=$@ GOARCH=amd64 GOPATH=$$(pwd) go install -pkgdir $$(pwd)/pkg jlinoff/termcolors
-	GOOS=$@ GOARCH=amd64 GOPATH=$$(pwd) GOBIN=$$(pwd)/bin/$@_amd64 go install jlinoff/csdiff
+	GOOS=$@ GOARCH=amd64 GOPATH=$$(pwd) go install -pkgdir $$(pwd)/pkg jlinoff/csdiff
+
+# For docker only.
+linux_:
+	@go version
+	GOOS=linux GOARCH=amd64 GOPATH=$$(pwd) go install -pkgdir $$(pwd)/pkg jlinoff/termcolors
+	GOOS=linux GOARCH=amd64 GOPATH=$$(pwd) GOBIN=$$(pwd)/bin/linux_amd64 go install jlinoff/csdiff
 
 windows:
 	@go version
@@ -82,5 +88,5 @@ docker-linux:
 		echo "INFO: docker build --build-arg gover=1.8.3 -f Dockerfile -t goco:1.8.3 -t goco:latest ." ; \
 		docker build --build-arg gover=1.8.3 -f Dockerfile -t goco:1.8.3 -t goco:latest . ; \
 	fi
-	docker run -it --rm -v $$(pwd):/opt/go/project goco make
+	docker run -it --rm -v $$(pwd):/opt/go/project goco make linux_ test
 	@echo "INFO: done"
