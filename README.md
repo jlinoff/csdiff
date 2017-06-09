@@ -321,7 +321,7 @@ Suggestions and improvements are greatly appreciated.
 
 ### Add ANSI 256 color support.
 
-I added the `--256` option to show the available colors. Will add support for to use them soon.
+I added the `--256` option to show the available colors. Will add support for users to use them soon.
 
 Here is what the `--256` output looks like.
 
