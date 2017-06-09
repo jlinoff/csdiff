@@ -183,7 +183,16 @@ They are *not* case sensitive.
 | reverse   | Reverse the foreground and background. |
 | reset     | Reset the colors and modifiers. |
 
-The data types are shown in the table below
+### 256 Color ANSI Colors
+You can specify a much wider range of colors using the ANSI 256 color mode colors using: `fg256[N]` and `bg256[N]`
+where N is a number between in the range [0..255]. To see all of the colors available use the `--256` option.
+
+```bash
+$ csdiff --256
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://user-images.githubusercontent.com/2991242/26957671-6ac182e6-4c7b-11e7-80c3-495d098ad811.png" alt="example-256">
+
+> The `fg256[N]` and `bg256[N]` color options are only available in version 0.5.x or later.
 
 <a name="cliopts"></a>
 ## Command Line Options
@@ -191,7 +200,8 @@ The command line options are best accessed by looking at the inline help because
 over time but these are the command line options available in 0.4.x.
 
 | Long Option           | Short Option    | Brief Description |
-| --------------------- | --------------- | ----------------- 
+| --------------------- | --------------- | ----------------- |
+| --256                 | NONE            | Print the 256 color ANSI color map values. |
 | --color-map COLOR_MAP | --c COLOR_MAP   | Specify a color map for a tag. |
 | --clear               | NONE            | Clear the default color map. |
 | --config FILE         | NONE            | Specify a color map config file. |
@@ -317,15 +327,3 @@ It has been tested on Mac OS X 10.12.5, CentOS 7 and CentOS 6.
 Suggestions and improvements are greatly appreciated.
 
 <a name="todo"></a>
-## TODO
-
-### Add ANSI 256 color support.
-
-I added the `--256` option to show the available colors. Will add support for users to use them soon.
-
-Here is what the `--256` output looks like.
-
-```bash
-$ csdiff --256
-```
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://user-images.githubusercontent.com/2991242/26957671-6ac182e6-4c7b-11e7-80c3-495d098ad811.png" alt="example-256">
