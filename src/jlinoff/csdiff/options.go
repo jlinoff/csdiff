@@ -17,12 +17,13 @@ import (
 
 // colorsType are the colors used in colorize mode.
 type colorsType struct {
-	CharsMatch    termcolors.TermAnsiAttrTypes
-	CharsDiff     termcolors.TermAnsiAttrTypes
-	LinesMatch    termcolors.TermAnsiAttrTypes
-	LeftLineOnly  termcolors.TermAnsiAttrTypes
-	RightLineOnly termcolors.TermAnsiAttrTypes
-	Symbol        termcolors.TermAnsiAttrTypes // |, <, >
+	CharsMatch    string
+	CharsDiff     string
+	LinesMatch    string
+	LeftLineOnly  string
+	RightLineOnly string
+	Symbol        string // |, <, >
+	Reset         string
 }
 
 // replaceType is the list of replacement patterns that are used for filtering.
@@ -37,7 +38,6 @@ type options struct {
 	Suppress     bool
 	Width        int
 	Colorize     bool
-	TermInfo     termcolors.TermInfoType
 	Colors       colorsType
 	SideBySide   bool
 	Summary      bool
@@ -86,19 +86,22 @@ func getopts() (opts options) {
 
 	// Initialize the colors.
 	// Use background to differentiate so that the user can space differences.
+	reset, _ := termcolors.ParseColorExpr("clear")
+	def, _ := termcolors.ParseColorExpr("bgLightGrey")
+	symdef, _ := termcolors.ParseColorExpr("red,bold")
 	ct := colorsType{
-		CharsMatch:    termcolors.TermAnsiAttrTypes{termcolors.BgDefault, termcolors.FgDefault},
-		CharsDiff:     termcolors.TermAnsiAttrTypes{termcolors.BgLightgrey},
-		LinesMatch:    termcolors.TermAnsiAttrTypes{termcolors.BgDefault, termcolors.FgDefault},
-		LeftLineOnly:  termcolors.TermAnsiAttrTypes{termcolors.BgLightgrey},
-		RightLineOnly: termcolors.TermAnsiAttrTypes{termcolors.BgLightgrey},
-		Symbol:        termcolors.TermAnsiAttrTypes{termcolors.SetBold, termcolors.FgRed},
+		CharsMatch:    reset,
+		CharsDiff:     def,
+		LinesMatch:    reset,
+		LeftLineOnly:  def,
+		RightLineOnly: def,
+		Symbol:        symdef,
+		Reset:         reset,
 	}
 
 	// Initialize the options structure.
 	opts = options{
-		TermInfo:     termcolors.MakeTermInfo(),
-		Width:        int(termcolors.MakeTermInfo().Width()),
+		Width:        int(termcolors.GetTermInfo().Cols),
 		Colorize:     true,
 		Colors:       ct,
 		SideBySide:   true,
@@ -118,13 +121,14 @@ func getopts() (opts options) {
 			cm := nextArg(&i, opt)
 			getColorMap(opt, cm, &opts)
 		case "--clear":
+			clear, _ := termcolors.ParseColorExpr("clear")
 			opts.Colors = colorsType{
-				CharsMatch:    termcolors.TermAnsiAttrTypes{termcolors.FgDefault},
-				CharsDiff:     termcolors.TermAnsiAttrTypes{termcolors.FgDefault},
-				LinesMatch:    termcolors.TermAnsiAttrTypes{termcolors.FgDefault},
-				LeftLineOnly:  termcolors.TermAnsiAttrTypes{termcolors.FgDefault},
-				RightLineOnly: termcolors.TermAnsiAttrTypes{termcolors.FgDefault},
-				Symbol:        termcolors.TermAnsiAttrTypes{termcolors.FgDefault},
+				CharsMatch:    clear,
+				CharsDiff:     clear,
+				LinesMatch:    clear,
+				LeftLineOnly:  clear,
+				RightLineOnly: clear,
+				Symbol:        clear,
 			}
 		case "--config":
 			config := nextArg(&i, opt)
@@ -177,50 +181,6 @@ func getColorMap(opt string, cms string, opts *options) {
 	// The format is:
 	//  -c <target>=attr[,attr][;<target>=attr[,attr]]
 
-	// Lambda function to parse values.
-	parseVals := func(valstr string) (seq termcolors.TermAnsiAttrTypes) {
-		vals := strings.Split(valstr, ",")
-		seq = termcolors.TermAnsiAttrTypes{}
-
-		// Get the lower case values for the terminfo attr strings.
-		m := map[string]string{}
-		ti := termcolors.MakeTermInfo()
-		for k := range ti.AttrsByName {
-			ml := strings.ToLower(k)
-			m[ml] = k
-		}
-
-		// This is a bit tricky because we allow the user to specify the actual
-		// string value from terminfo like "FgYellow" or "SetBold" but that is
-		// not documented.
-		// TrimSpace was added so that this function could also be
-		// used for file data.
-		for _, val := range vals {
-			ml := strings.TrimSpace(strings.ToLower(val))
-
-			// First try to the raw value in case the user specified something
-			// like "setbold".
-			k, ok := m[ml]
-			if !ok {
-				// That failed, now see if it is a set, that is very common.
-				mlp := "set" + ml
-				k, ok = m[mlp]
-				if !ok {
-					// Set attempt failed. Try a last ditch effort to see if it is a
-					// color, maybe they specified yellow. If so, make it a foreground
-					// color.
-					mlp = "fg" + ml
-					k, ok = m[mlp]
-					if !ok {
-						log.Fatalf("invalid value '%v', for %v, see help (-h)", val, opt)
-					}
-				}
-			}
-			seq = append(seq, ti.AttrsByName[k])
-		}
-		return
-	}
-
 	lines := strings.Split(cms, ";")
 	for _, cm := range lines {
 		toks := strings.SplitN(cm, "=", 2)
@@ -229,7 +189,10 @@ func getColorMap(opt string, cms string, opts *options) {
 		}
 
 		key := strings.TrimSpace(toks[0]) // for file parsing
-		seq := parseVals(toks[1])
+		seq, err := termcolors.ParseColorExpr(toks[1])
+		if err != nil {
+			log.Fatalf("invalid key value '%v' for '%v', see help (-h): %v", key, opt, err)
+		}
 		switch strings.ToLower(key) {
 		case "charsmatch", "cm":
 			opts.Colors.CharsMatch = seq

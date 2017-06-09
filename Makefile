@@ -35,12 +35,12 @@ darwin:
 linux:
 	@go version
 	GOOS=$@ GOARCH=amd64 GOPATH=$$(pwd) go install -pkgdir $$(pwd)/pkg jlinoff/termcolors
-	GOOS=$@ GOARCH=amd64 GOPATH=$$(pwd) go install -pkgdir $$(pwd)/pkg jlinoff/csdiff
+	GOOS=$@ GOARCH=amd64 GOPATH=$$(pwd) GOBIN=$$(pwd)/bin/$@_amd64 go install jlinoff/csdiff
 
 windows:
 	@go version
 	GOOS=$@ GOARCH=amd64 GOPATH=$$(pwd) go install -pkgdir $$(pwd)/pkg jlinoff/termcolors
-	GOOS=$@ GOARCH=amd64 GOPATH=$$(pwd) go install -pkgdir $$(pwd)/pkg jlinoff/csdiff
+	GOOS=$@ GOARCH=amd64 GOPATH=$$(pwd) GOBIN=$$(pwd)/bin/$@_amd64 go install jlinoff/csdiff
 
 # Package the executable into a zip file for release.
 rel/csdiff-%.zip: bin/%/csdiff
@@ -78,9 +78,9 @@ docker-linux:
 	@docker images
 	@docker images goco | grep latest
 	@if ! docker images goco | grep latest >/dev/null ; then \
-	echo "INFO: creating goco docker image" ; \
-	echo "INFO: docker build --build-arg gover=1.8.3 -f Dockerfile -t goco:1.8.3 -t goco:latest ." ; \
-	docker build --build-arg gover=1.8.3 -f Dockerfile -t goco:1.8.3 -t goco:latest . ; \
+		echo "INFO: creating goco docker image" ; \
+		echo "INFO: docker build --build-arg gover=1.8.3 -f Dockerfile -t goco:1.8.3 -t goco:latest ." ; \
+		docker build --build-arg gover=1.8.3 -f Dockerfile -t goco:1.8.3 -t goco:latest . ; \
 	fi
 	docker run -it --rm -v $$(pwd):/opt/go/project goco make
 	@echo "INFO: done"

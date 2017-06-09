@@ -326,11 +326,11 @@ func (sum *diffSummaryType) sdiff(opts options, seq1, seq2 []string, mp [][]int)
 			// Since they match we can use seq1 for everything.
 			printLine(opts, n1+1, seq1[n1], width, true, []bool{}, true)
 			if opts.Colorize == true {
-				opts.TermInfo.Set(opts.Colors.Symbol...)
+				fmt.Print(opts.Colors.Symbol)
 			}
 			fmt.Print("   ")
 			if opts.Colorize == true {
-				opts.TermInfo.Reset()
+				fmt.Print(opts.Colors.Reset)
 			}
 			printLine(opts, n2+1, seq2[n2], width, false, []bool{}, true)
 			fmt.Println("")
@@ -345,11 +345,11 @@ func (sum *diffSummaryType) sdiff(opts options, seq1, seq2 []string, mp [][]int)
 // func printSymbol prints the symbol with the colorization.
 func printSymbol(opts options, sym string) {
 	if opts.Colorize == true {
-		opts.TermInfo.Set(opts.Colors.Symbol...)
+		fmt.Print(opts.Colors.Symbol)
 	}
 	fmt.Printf("%v", sym)
 	if opts.Colorize == true {
-		opts.TermInfo.Reset()
+		fmt.Print(opts.Colors.Reset)
 	}
 }
 
@@ -371,18 +371,18 @@ func printLine(opts options, lineNum int, line string, width int, left bool, ref
 		// The user specified the -c option, use the color map.
 		if len(ref) > 0 {
 			// Two lines, each have diffs.
-			opts.TermInfo.Reset()
+			fmt.Print(opts.Colors.Reset)
 			i := 0
 			for i < len(s) && (nr < w || w < 1) {
 				if (nr > 0 && ref[nr] != ref[nr-1]) || (nr == 0) {
 					// Check the difference map (r) to see if we
 					// need to colorize.
 					if ref[nr] == false {
-						opts.TermInfo.Reset()
-						opts.TermInfo.Set(opts.Colors.CharsDiff...)
+						fmt.Print(opts.Colors.Reset)
+						fmt.Print(opts.Colors.CharsDiff)
 					} else {
-						opts.TermInfo.Reset()
-						opts.TermInfo.Set(opts.Colors.CharsMatch...)
+						fmt.Print(opts.Colors.Reset)
+						fmt.Print(opts.Colors.CharsMatch)
 					}
 				}
 				rv, width := utf8.DecodeRuneInString(s[i:])
@@ -393,18 +393,18 @@ func printLine(opts options, lineNum int, line string, width int, left bool, ref
 		} else {
 			if both == true {
 				// both lines match
-				opts.TermInfo.Set(opts.Colors.LinesMatch...)
+				fmt.Print(opts.Colors.LinesMatch)
 			} else if left == true {
 				// only the left line
-				opts.TermInfo.Set(opts.Colors.LeftLineOnly...)
+				fmt.Print(opts.Colors.LeftLineOnly)
 			} else { // left is false
 				// only the right line
-				opts.TermInfo.Set(opts.Colors.RightLineOnly...)
+				fmt.Print(opts.Colors.RightLineOnly)
 			}
 			nr = len(s)
 			fmt.Printf("%v", s)
 		}
-		opts.TermInfo.Reset()
+		fmt.Print(opts.Colors.Reset)
 	} else {
 		nr = len(s)
 		fmt.Printf("%v", s)

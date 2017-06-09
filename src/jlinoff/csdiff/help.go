@@ -143,14 +143,14 @@ OPTIONS
                    fgYellow         [33mXYZ[0m
                    fgWhite          [97mXYZ[0m
 
-                   fgLightBlue      [94mXYZ[0m
-                   fgLightCyan      [96mXYZ[0m
-                   fgLightGreen     [92mXYZ[0m
-                   fgLightGrey      [37mXYZ[0m
-                   fgLightMagenta   [95mXYZ[0m
-                   fgLightRed       [91mXYZ[0m
-                   fgLightYellow    [93mXYZ[0m
+                   fgBrightBlue     [94mXYZ[0m
+                   fgBrightCyan     [96mXYZ[0m
+                   fgBrightGreen    [92mXYZ[0m
+                   fgBrightMagenta  [95mXYZ[0m
+                   fgBrightRed      [91mXYZ[0m
+                   fgBrightYellow   [93mXYZ[0m
 
+                   fgLightGrey      [37mXYZ[0m
                    fgDarkGrey       [90mXYZ[0m
 
                 These are the available background colors (case
@@ -166,13 +166,13 @@ OPTIONS
                    bgRed            [41;97mXYZ[0m
                    bgYellow         [43mXYZ[0m
 
-                   bgLightBlue      [104mXYZ[0m
-                   bgLightCyan      [106mXYZ[0m
-                   bgLightGreen     [102mXYZ[0m
-                   bgLightGrey      [47mXYZ[0m
-                   bgLightMagenta   [105mXYZ[0m
-                   bgLightRed       [101mXYZ[0m
-                   bgLightYellow    [103mXYZ[0m
+                   bgBrightBlue     [104mXYZ[0m
+                   bgBrightCyan     [106mXYZ[0m
+                   bgBrightGreen    [102mXYZ[0m
+                   bgBrightGrey     [47mXYZ[0m
+                   bgBrightMagenta  [105mXYZ[0m
+                   bgBrightRed      [101mXYZ[0m
+                   bgBrightYellow   [103mXYZ[0m
 
                    bgDarkGrey       [100mXYZ[0m
 
@@ -193,6 +193,12 @@ OPTIONS
                    -c lm=bold,fgGreen
                    -c llo=bold,fgCyan
                    -c rlo=bold,fgCyan
+
+                You can also access the 256 mode color pallet for
+                foreground and background colors using: fg256[N]
+                and bg256[N] where N is a number between in the
+                range [0..255]. To see all of the colors available
+                use the --256 option.
 
     --clear     Clear the default settings. This is useful when you
                 want to create a new color map. It is the same setting
@@ -281,6 +287,6 @@ LICENSE
     MIT Open Source
   `
 	f = "\n" + strings.TrimSpace(f) + "\n\n"
-	fmt.Printf(f, filepath.Base(os.Args[0]), version, termcolors.MakeTermInfo().Width())
+	fmt.Printf(f, filepath.Base(os.Args[0]), version, int(termcolors.GetTermInfo().Cols))
 	os.Exit(0)
 }

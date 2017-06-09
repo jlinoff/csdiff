@@ -1,78 +1,254 @@
-// Terminal color tools. Could be a separate package if it is needed elsewhere.
+// Package termcolors is the ANSI terminal color tools.
+//
+// You call it with a list of colorMap attributes and it returns a string that
+// will implement them. Here is a simple example that prints some text in
+// bold red.
+//
+//    clear, _ := termcolors.ParseColorExpr("clear")
+//    boldRed, _ := termcolors.ParseColorExpr("red,bold")
+//
+//    fmt.Print(boldRed)
+//    fmt.Println("This will be red!")
+//    fmt.Print(clear)
+//
+// You can also use 256 color mode. Here is a simple example that
+// shows that.
+//
+//    clear, _ := termcolors.ParseColorExpr("clear")
+//    boldRed, _ := termcolors.ParseColorExpr("fg256[9],bold")
+//
+//    fmt.Print(boldRed)
+//    fmt.Println("This will be red!")
+//    fmt.Print(clear)
+//
+// The color map keys are not case sensitive so RED, red and Red are all the
+// same.
+//
 // License: The MIT License (MIT)
 // Copyright (c) 2017 Joe Linoff
 package termcolors
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 	"syscall"
 	"unsafe"
 )
 
-//func main() {
-//	MakeTermInfo().TestTermInfo()
-//}
+// ColorMapType is a unique type for color map constants.
+type ColorMapType int
 
-// TermAnsiAttrType defines the terminal attribute contants type.
-type TermAnsiAttrType int
-
-// TermAnsiAttrTypes is a list of attr types.
-type TermAnsiAttrTypes []TermAnsiAttrType
-
-// Terminal attribute constants.
+// colorMapType constants
 const (
-	SetBold        TermAnsiAttrType = 1
-	SetDim                          = 2
-	SetUnderline                    = 4
-	SetBlink                        = 5
-	SetReverse                      = 7
-	SetHidden                       = 8
-	Reset                           = 0 // reset everything
-	ResSetBold                      = 21
-	ResetDim                        = 22
-	ResetUnderline                  = 24
-	ResetBlink                      = 25
-	ResetReverse                    = 27
-	ResetHidden                     = 28
-	FgDefault                       = 39
-	FgBlack                         = 30
-	FgRed                           = 31
-	FgGreen                         = 32
-	FgYellow                        = 33
-	FgBlue                          = 34
-	FgMagenta                       = 35
-	FgCyan                          = 36
-	FgLightgray                     = 37
-	FgLightgrey                     = 37
-	FgDarkgray                      = 90
-	FgDarkgrey                      = 90
-	FgLightred                      = 91
-	FgLightgreen                    = 92
-	FgLightyellow                   = 93
-	FgLightblue                     = 94
-	FgLightmagenta                  = 95
-	FgLightcyan                     = 96
-	FgWhite                         = 97
-	BgDefault                       = 49
-	BgBlack                         = 40
-	BgRed                           = 41
-	BgGreen                         = 42
-	BgYellow                        = 43
-	BgBlue                          = 44
-	BgMagenta                       = 45
-	BgCyan                          = 46
-	BgLightgray                     = 47
-	BgLightgrey                     = 47
-	BgDarkgray                      = 100
-	BgDarkgrey                      = 100
-	BgLightred                      = 101
-	BgLightgreen                    = 102
-	BgLightyellow                   = 103
-	BgLightblue                     = 104
-	BgLightmagenta                  = 105
-	BgLightcyan                     = 106
-	BgWhite                         = 107
+	None    ColorMapType = 0
+	Mode8     = 1
+	Mode256Fg = 2
+	Mode256Bg = 3
 )
+
+// ColorMapData defines each item in the color map.
+type ColorMapData struct {
+	Mode  ColorMapType
+	Value int
+}
+
+// ColorMap is the map of colors and attributes (like bold)
+// that are available.
+var ColorMap = map[string]ColorMapData{
+	// Attributes.
+	"blink":              ColorMapData{Mode8,  5},
+	"bold":               ColorMapData{Mode8,  1},
+	"clear":              ColorMapData{Mode8,  0},
+	"dim":                ColorMapData{Mode8,  2},
+	"hidden":             ColorMapData{Mode8,  6},
+	"init":               ColorMapData{Mode8,  0},
+	"italics":            ColorMapData{Mode8,  3},
+	"reset":              ColorMapData{Mode8,  0},
+	"resetblink":         ColorMapData{Mode8, 25},
+	"resetbold":          ColorMapData{Mode8, 21},
+	"resetdim":           ColorMapData{Mode8, 22},
+	"resethidden":        ColorMapData{Mode8, 26},
+	"resetitalics":       ColorMapData{Mode8, 23},
+	"resetreverse":       ColorMapData{Mode8, 27},
+	"resetstrikethrough": ColorMapData{Mode8, 29},
+	"resetunderline":     ColorMapData{Mode8, 24},
+	"reverse":            ColorMapData{Mode8,  7},
+	"setblink":           ColorMapData{Mode8,  5},
+	"setbold":            ColorMapData{Mode8,  1},
+	"setdim":             ColorMapData{Mode8,  2},
+	"sethidden":          ColorMapData{Mode8,  6},
+	"setitalics":         ColorMapData{Mode8,  3},
+	"setreverse":         ColorMapData{Mode8,  7},
+	"setunderline":       ColorMapData{Mode8,  4},
+	"underline":          ColorMapData{Mode8,  4},
+
+	// Standard foreground.
+	"black":       ColorMapData{Mode8, 30},  // same as Mode256Fg 0
+	"blue":        ColorMapData{Mode8, 34},  // same as Mode25Fg, 4
+	"cyan":        ColorMapData{Mode8, 36},  // same as Mode25Fg, 6
+	"fgblack":     ColorMapData{Mode8, 30},  // same as Mode256Fg 0
+	"fgblue":      ColorMapData{Mode8, 34},  // same as Mode25Fg, 4
+	"fgcyan":      ColorMapData{Mode8, 36},  // same as Mode25Fg, 6
+	"fgdefault":   ColorMapData{Mode8, 39},
+	"fggreen":     ColorMapData{Mode8, 32},  // same as Mode25Fg, 2
+	"fglightgray": ColorMapData{Mode8, 37},  // same as Mode25Fg, 7
+	"fglightgrey": ColorMapData{Mode8, 37},  // same as Mode25Fg, 7
+	"fgmagenta":   ColorMapData{Mode8, 35},  // same as Mode25Fg, 5
+	"fgred":       ColorMapData{Mode8, 31},  // same as Mode25Fg, 1
+	"fgyellow":    ColorMapData{Mode8, 33},  // same as Mode25Fg, 3
+	"green":       ColorMapData{Mode8, 32},  // same as Mode25Fg, 2
+	"lightgray":   ColorMapData{Mode8, 37},  // same as Mode25Fg, 7
+	"lightgrey":   ColorMapData{Mode8, 37},  // same as Mode25Fg, 7
+	"magenta":     ColorMapData{Mode8, 35},  // same as Mode25Fg, 5
+	"red":         ColorMapData{Mode8, 31},  // same as Mode25Fg, 1
+	"yellow":      ColorMapData{Mode8, 33},  // same as Mode25Fg, 3
+
+	// High intensity foreground.
+	"brightblue":      ColorMapData{Mode8, 94},  // same as Mode25Fg, 12
+	"brightcyan":      ColorMapData{Mode8, 96},  // same as Mode25Fg, 14
+	"brightgreen":     ColorMapData{Mode8, 92},  // same as Mode25Fg, 10
+	"brightmagenta":   ColorMapData{Mode8, 95},  // same as Mode25Fg, 13
+	"brightred":       ColorMapData{Mode8, 91},  // same as Mode25Fg, 9
+	"brightwhite":     ColorMapData{Mode8, 97},  // same as Mode25Fg, 15
+	"brightyellow":    ColorMapData{Mode8, 93},  // same as Mode25Fg, 11
+	"darkgray":        ColorMapData{Mode8, 90},  // same as Mode25Fg, 8
+	"darkgrey":        ColorMapData{Mode8, 90},  // same as Mode25Fg, 8
+	"fgbrightblue":    ColorMapData{Mode8, 94},  // same as Mode25Fg, 12
+	"fgbrightcyan":    ColorMapData{Mode8, 96},  // same as Mode25Fg, 14
+	"fgbrightgreen":   ColorMapData{Mode8, 92},  // same as Mode25Fg, 10
+	"fgbrightmagenta": ColorMapData{Mode8, 95},  // same as Mode25Fg, 13
+	"fgbrightred":     ColorMapData{Mode8, 91},  // same as Mode25Fg, 9
+	"fgbrightwhite":   ColorMapData{Mode8, 97},  // same as Mode25Fg, 15
+	"fgbrightyellow":  ColorMapData{Mode8, 93},  // same as Mode25Fg, 11
+	"fgdarkgray":      ColorMapData{Mode8, 90},  // same as Mode25Fg, 8
+	"fgdarkgrey":      ColorMapData{Mode8, 90},  // same as Mode25Fg, 8
+
+	// Standard background.
+	"bgblack":     ColorMapData{Mode8, 40},  // same as Mode256Bg 0
+	"bgred":       ColorMapData{Mode8, 41},  // same as Mode256Bg 1
+	"bggreen":     ColorMapData{Mode8, 42},  // same as Mode256Bg 2
+	"bgyellow":    ColorMapData{Mode8, 43},  // same as Mode256Bg 3
+	"bgblue":      ColorMapData{Mode8, 44},  // same as Mode256Bg 4
+	"bgmagenta":   ColorMapData{Mode8, 45},  // same as Mode256Bg 5
+	"bgcyan":      ColorMapData{Mode8, 46},  // same as Mode256Bg 6
+	"bglightgrey": ColorMapData{Mode8, 47},  // same as Mode256Bg 7
+	"bglightgray": ColorMapData{Mode8, 47},  // same as Mode256Bg 7
+	"bgdefault":   ColorMapData{Mode8, 49},
+
+	// High intensity background.
+	"bgdarkgrey":      ColorMapData{Mode8, 100},   // same as Mode256Bg 8
+	"bgdarkgray":      ColorMapData{Mode8, 100},  // same as Mode256Bg 8
+	"bgbrightred":     ColorMapData{Mode8, 101},  // same as Mode256Bg 9
+	"bgbrightgreen":   ColorMapData{Mode8, 102},  // same as Mode256Bg 10
+	"bgbrightyellow":  ColorMapData{Mode8, 103},  // same as Mode256Bg 11
+	"bgbrightblue":    ColorMapData{Mode8, 104},  // same as Mode256Bg 12
+	"bgbrightmagenta": ColorMapData{Mode8, 105},  // same as Mode256Bg 13
+	"bgbrightcyan":    ColorMapData{Mode8, 106},  // same as Mode256Bg 14
+	"bgbrightwhite":   ColorMapData{Mode8, 107},  // same as Mode256Bg 15
+
+	// Mode 256.
+	"fg256": ColorMapData{Mode256Fg, 0},
+	"bg256": ColorMapData{Mode256Bg, 0},
+}
+
+// ParseColorExpr parses a color expression into the appropriate ANSI
+// escape sequences.
+//
+// The color expression is a comma separated list of keywords from the
+// color map. The keywords are not case sensitive so fgred can be input
+// as "fgred", "FGRED", "fgRed" and so on.
+//
+// The mode256 entries are treated as arrays so to get foreground mode
+// 256 color 9 (bright red), you would specify: fg256[9]. Similarly to
+// get background mode 256 color 252 you would specify bg256[252].
+//
+// Here are some examples:
+//     fgred        --> ESC[31m
+//     fgred,bold   --> ESC[31;1m
+//     fg256[1]     --> ESC[38;5;1m
+func ParseColorExpr(expr string) (result string, err error) {
+	// lambda to parse the expression into records for later processing.
+	parse := func(expr string) (recs []ColorMapData, err error){
+		recs = []ColorMapData{}
+		toks := strings.Split(expr, ",")
+		for _, tok := range toks {
+			token := strings.TrimSpace(strings.ToLower(tok))
+			key := token
+			val := -1
+			if strings.Index(key, "[") >= 0 {
+				// Parse fg256[3] --> fg256 and 3
+				xs := strings.Split(key, "[")
+				key = xs[0]
+				vss := strings.Split(xs[1], "]")
+				vs := strings.TrimSpace(vss[0])
+				v, e := strconv.Atoi(vs)
+				if e != nil {
+					err = fmt.Errorf("parsing failed for %v: %v", expr, e)
+					return
+				}
+				val = v
+			}
+			rec, ok := ColorMap[key]
+			if ok == false {
+				err = fmt.Errorf("parsing failed for %v: %v not found", expr, key)
+				return
+			}
+			if val >= 0 {
+				rec.Value = val
+			}
+			recs = append(recs, rec)
+		}
+		return
+	}
+
+	// lambda to build the return string from the parsed expression.
+	build := func(recs []ColorMapData) (result string, err error) {
+		mode := None
+		result = ""
+		first := true
+		for i, rec := range recs {
+			if rec.Mode != mode {
+				first = true
+				mode = rec.Mode
+				if i > 0 {
+					result += "m"
+				}
+				switch mode {
+					case Mode8: // ESC[...m
+					result += fmt.Sprintf("\x1b[")
+					case Mode256Fg: // ESC[38;5;#m
+					result += fmt.Sprintf("\x1b[38;5;")
+					case Mode256Bg: // ESC[48;5;#m
+					result += fmt.Sprintf("\x1b[48;5;")
+				default:
+					break
+				}
+			}
+			if first == false {
+				result += ";"
+			}
+			result += fmt.Sprintf("%d", rec.Value)
+			first = false
+		}
+		result += "m"
+		return
+	}
+
+	// parse the expression and build the return string.
+	err = nil
+  recs := []ColorMapData{}
+	recs, err = parse(expr)
+	if err != nil {
+		return
+	}
+	result, err = build(recs)
+	if err != nil {
+		return
+	}
+
+	return
+}
 
 // TermInfoType stores attributes about the terminal.
 type TermInfoType struct {
@@ -80,171 +256,21 @@ type TermInfoType struct {
 	Cols         uint16
 	Xpixel       uint16
 	Ypixel       uint16
-	AttrsByName  map[string]TermAnsiAttrType
-	AttrsByValue map[TermAnsiAttrType]string
 }
 
-// MakeTermInfo creates the terminal information
-func MakeTermInfo() (ti TermInfoType) {
-	retCode, _, errno := syscall.Syscall(syscall.SYS_IOCTL,
+// GetTermInfo returns the height and width of the terminal.
+func GetTermInfo() (ti TermInfoType) {
+	r, _, errno := syscall.Syscall(
+		syscall.SYS_IOCTL,
 		uintptr(syscall.Stdin),
 		uintptr(syscall.TIOCGWINSZ),
 		uintptr(unsafe.Pointer(&ti)))
 
-	if int(retCode) == -1 {
+	if int(r) == -1 {
 		panic(errno)
 	}
 
-	// Create string map to the terminal attributes.
-	ti.AttrsByName = map[string]TermAnsiAttrType{}
-	ti.AttrsByName["SetBold"] = SetBold
-	ti.AttrsByName["SetDim"] = SetDim
-	ti.AttrsByName["SetUnderline"] = SetUnderline
-	ti.AttrsByName["SetBlink"] = SetBlink
-	ti.AttrsByName["SetReverse"] = SetReverse
-	ti.AttrsByName["SetHidden"] = SetHidden
-	ti.AttrsByName["Reset"] = Reset
-	ti.AttrsByName["ResSetBold"] = ResSetBold
-	ti.AttrsByName["ResetDim"] = ResetDim
-	ti.AttrsByName["ResetUnderline"] = ResetUnderline
-	ti.AttrsByName["ResetBlink"] = ResetBlink
-	ti.AttrsByName["ResetReverse"] = ResetReverse
-	ti.AttrsByName["ResetHidden"] = ResetHidden
-	ti.AttrsByName["FgDefault"] = FgDefault
-	ti.AttrsByName["FgBlack"] = FgBlack
-	ti.AttrsByName["FgRed"] = FgRed
-	ti.AttrsByName["FgGreen"] = FgGreen
-	ti.AttrsByName["FgYellow"] = FgYellow
-	ti.AttrsByName["FgBlue"] = FgBlue
-	ti.AttrsByName["FgMagenta"] = FgMagenta
-	ti.AttrsByName["FgCyan"] = FgCyan
-	ti.AttrsByName["FgLightgray"] = FgLightgray
-	ti.AttrsByName["FgLightgrey"] = FgLightgrey
-	ti.AttrsByName["FgDarkgray"] = FgDarkgray
-	ti.AttrsByName["FgDarkgrey"] = FgDarkgrey
-	ti.AttrsByName["FgLightred"] = FgLightred
-	ti.AttrsByName["FgLightgreen"] = FgLightgreen
-	ti.AttrsByName["FgLightyellow"] = FgLightyellow
-	ti.AttrsByName["FgLightblue"] = FgLightblue
-	ti.AttrsByName["FgLightmagenta"] = FgLightmagenta
-	ti.AttrsByName["FgLightcyan"] = FgLightcyan
-	ti.AttrsByName["FgWhite"] = FgWhite
-	ti.AttrsByName["BgDefault"] = BgDefault
-	ti.AttrsByName["BgBlack"] = BgBlack
-	ti.AttrsByName["BgRed"] = BgRed
-	ti.AttrsByName["BgGreen"] = BgGreen
-	ti.AttrsByName["BgYellow"] = BgYellow
-	ti.AttrsByName["BgBlue"] = BgBlue
-	ti.AttrsByName["BgMagenta"] = BgMagenta
-	ti.AttrsByName["BgCyan"] = BgCyan
-	ti.AttrsByName["BgLightgray"] = BgLightgray
-	ti.AttrsByName["BgLightgrey"] = BgLightgrey
-	ti.AttrsByName["BgDarkgray"] = BgDarkgray
-	ti.AttrsByName["BgDarkgrey"] = BgDarkgrey
-	ti.AttrsByName["BgLightred"] = BgLightred
-	ti.AttrsByName["BgLightgreen"] = BgLightgreen
-	ti.AttrsByName["BgLightyellow"] = BgLightyellow
-	ti.AttrsByName["BgLightblue"] = BgLightblue
-	ti.AttrsByName["BgLightmagenta"] = BgLightmagenta
-	ti.AttrsByName["BgLightcyan"] = BgLightcyan
-	ti.AttrsByName["BgWhite"] = BgWhite
-
-	// Now populate the reverse map.
-	ti.AttrsByValue = map[TermAnsiAttrType]string{}
-	for v, k := range ti.AttrsByName {
-		ti.AttrsByValue[k] = v
-	}
-
-	return ti
-}
-
-// TestTermInfo shows how to use this package.
-// It displays the terminal width, height and a host of information
-// about fg, bg and attribute pairs.
-func (ti TermInfoType) TestTermInfo() {
-	fmt.Printf("width  = %4v\n", ti.Width())
-	fmt.Printf("height = %4v\n", ti.Height())
-
-	fgs := []TermAnsiAttrType{FgDefault, FgBlack, FgRed, FgGreen, FgYellow, FgBlue, FgMagenta, FgCyan}
-	bgs := []TermAnsiAttrType{BgDefault, BgBlack, BgRed, BgGreen, BgYellow, BgBlue, BgMagenta, BgCyan}
-	as := []TermAnsiAttrType{Reset, SetBold, SetDim, SetUnderline, SetBlink, SetReverse}
-	n := 0
-	for _, bg := range bgs {
-		for _, fg := range fgs {
-			for _, a1 := range as {
-				for _, a2 := range as {
-					n++
-					fmt.Printf("%5d ", n)
-					fmt.Printf("%4d:%-12s  ", fg, ti.AttrsByValue[fg])
-					fmt.Printf("%4d:%-12s  ", bg, ti.AttrsByValue[bg])
-					fmt.Printf("%4d:%-12s  ", a1, ti.AttrsByValue[a1])
-					fmt.Printf("%4d:%-12s  ", a2, ti.AttrsByValue[a2])
-					if a1 != a2 {
-						ti.Set(bg, a1, a2, fg)
-					} else {
-						ti.Set(bg, a1, fg)
-					}
-					fmt.Printf("%v", "Lorem ipsum dolor sit amet")
-					ti.Reset()
-					fmt.Println("")
-				}
-			}
-		}
-	}
-}
-
-// Width returns the width of the terminal.
-func (ti TermInfoType) Width() uint16 {
-	return ti.Cols
-}
-
-// Height returns the height of the terminal.
-func (ti TermInfoType) Height() uint16 {
-	return ti.Rows
-}
-
-// Set term characteristics.
-// ti.Set(BgGreen, SetBold, FgRed)
-// fmt.Println("Bold Red on Green")
-// ti.Reset()  // same as ti.Set(Reset)
-func (ti TermInfoType) Set(attrs ...TermAnsiAttrType) {
-	fmt.Printf("\x1b[")
-	for i, attr := range attrs {
-		if i > 0 {
-			fmt.Printf(";")
-		}
-		fmt.Printf("%d", attr)
-	}
-	fmt.Printf("m")
-}
-
-// Reset the terminal characteristics.
-// It is shorthand for ti.Set(Reset).
-func (ti TermInfoType) Reset() {
-	ti.Set(Reset)
-}
-
-// SetFgColor256 sets the terminal foreground color to one of
-// the possible 256 colors. Use Reset256 to reset.
-// CITATION: https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
-func SetFgColor256(color int) {
-	if color >= 0 && color <= 255 {
-		fmt.Printf("\x1b[38;5;%dm", color)
-	}
-}
-
-// SetBgColor256 sets the terminal background color to one of
-// the possible 256 colors. Use Reset256 to reset.
-// CITATION: https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
-func SetBgColor256(color int) {
-	if color >= 0 && color <= 255 {
-		fmt.Printf("\x1b[48;5;%dm", color)
-	}
-}
-
-// Reset256 resets the terminal color back to the defaults.
-func Reset256() {
-	fmt.Printf("\x1b[0m]")
+  return
 }
 
 // Print256ColorTables prints out the 256 color tables for foreground and
