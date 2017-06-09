@@ -220,21 +220,21 @@ or copy it.
 
 ### Linux Example
 ```bash
-$ curl -s -k -L -O https://github.com/jlinoff/csdiff/releases/download/v0.4.2/csdiff-x64.tar.gz
-$ tar ztvf csdiff-x64.tar.gz 
--rwxr-xr-x  1 jlinoff 1784424920 2319784 Jun  5 11:02 csdiff
+$ curl -s -k -L -O https://github.com/jlinoff/csdiff/releases/download/v0.5.0/csdiff-linux_amd64.tar.gz
+$ tar ztvf csdiff-linux_amd64.tar.gz 
+-rwxr-xr-x  1 jlinoff 1784424920 2331734 Jun  9 13:52 csdiff
 ```
 
 ### Mac Example
 ```bash
-$ curl -s -k -L -O https://github.com/jlinoff/csdiff/releases/download/v0.4.2/csdiff-mac.zip
-$ unzip -l csdiff-mac.zip
-Archive:  csdiff-mac.zip
+$ curl -s -k -L -O https://github.com/jlinoff/csdiff/releases/download/v0.5.0/csdiff-darwin_amd64.zip
+$ unzip -l csdiff-darwin_amd64.zip
+Archive:  rel/csdiff-darwin_amd64.zip
   Length      Date    Time    Name
 ---------  ---------- -----   ----
-  2301184  06-05-2017 11:02   csdiff
+  2317280  06-09-2017 13:52   csdiff
 ---------                     -------
-  2301184                     1 file
+  2317280                     1 file
 ```
 
 <a name="modification"></a>
