@@ -183,7 +183,16 @@ They are *not* case sensitive.
 | reverse   | Reverse the foreground and background. |
 | reset     | Reset the colors and modifiers. |
 
-The data types are shown in the table below
+### 256 Color ANSI Colors
+You can specify a much wider range of colors using the ANSI 256 color mode colors using: `fg256[N]` and `bg256[N]`
+where N is a number between in the range [0..255]. To see all of the colors available use the `--256` option.
+
+```bash
+$ csdiff --256
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://user-images.githubusercontent.com/2991242/26957671-6ac182e6-4c7b-11e7-80c3-495d098ad811.png" alt="example-256">
+
+> The `fg256[N]` and `bg256[N]` color options are only available in version 0.5.x or later.
 
 <a name="cliopts"></a>
 ## Command Line Options
@@ -191,7 +200,8 @@ The command line options are best accessed by looking at the inline help because
 over time but these are the command line options available in 0.4.x.
 
 | Long Option           | Short Option    | Brief Description |
-| --------------------- | --------------- | ----------------- 
+| --------------------- | --------------- | ----------------- |
+| --256                 | NONE            | Print the 256 color ANSI color map values. |
 | --color-map COLOR_MAP | --c COLOR_MAP   | Specify a color map for a tag. |
 | --clear               | NONE            | Clear the default color map. |
 | --config FILE         | NONE            | Specify a color map config file. |
@@ -239,7 +249,9 @@ $ git clone https://github.com/jlinoff/csdiff.git
 
 ### Dockerfile
 Note that I used the following [Dockerfile](https://docs.docker.com/engine/reference/builder/)
-to create the linux image because I was working on a Mac.
+to create the linux image because I was working on a Mac and wanted to be able to test on linux.
+To simply build on linux, you can use the built-in go capability for cross compilation using GOOS
+and GOARCH.
 
 ```
 # This docker file creates a go compilation container that can be used
@@ -285,6 +297,8 @@ RUN cd /opt/go/${GO_VERSION}/dl && \
 # docker run -it --rm -v $(pwd):/opt/go/project goco go build myprog.go
 RUN /bin/echo '#!/bin/bash'                           > /opt/go/goco.sh && \
     /bin/echo 'export PATH="${GOROOT}/bin:${PATH}"'  >> /opt/go/goco.sh && \
+    /bin/echo 'export GOOS=linux'                    >> /opt/go/goco.sh && \
+    /bin/echo 'export GOARCH=amd64'                  >> /opt/go/goco.sh && \
     /bin/echo 'cd /opt/go/project'                   >> /opt/go/goco.sh && \
     /bin/echo '$*'                                   >> /opt/go/goco.sh && \
     chmod a+rx /opt/go/goco.sh && \
@@ -317,15 +331,6 @@ It has been tested on Mac OS X 10.12.5, CentOS 7 and CentOS 6.
 Suggestions and improvements are greatly appreciated.
 
 <a name="todo"></a>
+
 ## TODO
-
-### Add ANSI 256 color support.
-
-I added the `--256` option to show the available colors. Will add support for users to use them soon.
-
-Here is what the `--256` output looks like.
-
-```bash
-$ csdiff --256
-```
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://user-images.githubusercontent.com/2991242/26957671-6ac182e6-4c7b-11e7-80c3-495d098ad811.png" alt="example-256">
+1. Get go cross-compilation working for windows. The terminal size syscall in termcolors does not work.
