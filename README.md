@@ -249,7 +249,9 @@ $ git clone https://github.com/jlinoff/csdiff.git
 
 ### Dockerfile
 Note that I used the following [Dockerfile](https://docs.docker.com/engine/reference/builder/)
-to create the linux image because I was working on a Mac.
+to create the linux image because I was working on a Mac and wanted to be able to test on linux.
+To simply build on linux, you can use the built-in go capability for cross compilation using GOOS
+and GOARCH.
 
 ```
 # This docker file creates a go compilation container that can be used
@@ -295,6 +297,8 @@ RUN cd /opt/go/${GO_VERSION}/dl && \
 # docker run -it --rm -v $(pwd):/opt/go/project goco go build myprog.go
 RUN /bin/echo '#!/bin/bash'                           > /opt/go/goco.sh && \
     /bin/echo 'export PATH="${GOROOT}/bin:${PATH}"'  >> /opt/go/goco.sh && \
+    /bin/echo 'export GOOS=linux'                    >> /opt/go/goco.sh && \
+    /bin/echo 'export GOARCH=amd64'                  >> /opt/go/goco.sh && \
     /bin/echo 'cd /opt/go/project'                   >> /opt/go/goco.sh && \
     /bin/echo '$*'                                   >> /opt/go/goco.sh && \
     chmod a+rx /opt/go/goco.sh && \
@@ -327,3 +331,6 @@ It has been tested on Mac OS X 10.12.5, CentOS 7 and CentOS 6.
 Suggestions and improvements are greatly appreciated.
 
 <a name="todo"></a>
+
+## TODO
+1. Get go cross-compilation working for windows. The terminal size syscall in termcolors does not work.
