@@ -41,6 +41,8 @@ RUN cd /opt/go/${GO_VERSION}/dl && \
 # docker run -it --rm -v $(pwd):/opt/go/project goco go build myprog.go
 RUN /bin/echo '#!/bin/bash'                           > /opt/go/goco.sh && \
     /bin/echo 'export PATH="${GOROOT}/bin:${PATH}"'  >> /opt/go/goco.sh && \
+    /bin/echo 'export GOOS=linux'                    >> /opt/go/goco.sh && \
+    /bin/echo 'export GOARCH=amd64'                  >> /opt/go/goco.sh && \
     /bin/echo 'cd /opt/go/project'                   >> /opt/go/goco.sh && \
     /bin/echo '$*'                                   >> /opt/go/goco.sh && \
     chmod a+rx /opt/go/goco.sh && \

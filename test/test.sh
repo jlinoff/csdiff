@@ -12,9 +12,9 @@ source $Location/utils.sh
 # ================================================================
 # Main
 # ================================================================
-OS=$(uname -s)
-MACH=$(uname -m)
-OS_DIR=${OS}-${MACH}
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+MACH='amd64'
+OS_DIR=${OS}_${MACH}
 BIN_DIR=../bin/${OS_DIR}
 PROG=${BIN_DIR}/csdiff
 
@@ -65,5 +65,8 @@ utilsExec ${PROG} td03.txt td04.txt
 utilsExec ${PROG} -r "'\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}'" "'yyyy-mm-dd HH:MM:SS'" td03.txt td04.txt
 utilsExec ${PROG} td02.txt td05.txt
 utilsExec ${PROG} -d td02.txt td05.txt
+
+# Print out the 256 color, color tables.
+utilsExec ${PROG} --256
 
 utilsInfo "done"
