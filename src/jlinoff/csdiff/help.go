@@ -24,7 +24,7 @@ DESCRIPTION
 
     It is useful for analyzing text files that have patterns like
     timestamps that can easily be filtered out.
-  
+
     The file output is side by side. Here is a simple example. The
     width was truncated to 90 characters. Normally the width is the
     size of the terminal window.
@@ -49,7 +49,7 @@ DESCRIPTION
         nisi ut aliquip ex ea commodo consequat.
         suffix
 
-        $ %[1]v -w 90 f1.txt f2.txt 
+        $ %[1]v -w 90 f1.txt f2.txt
 
                test/file04a.txt                              test/file05a.txt
              1 [47msta[0mr[47mtm[0m                                [31;1m|[0m     1 [47mp[0mr[47mefix[0m
@@ -78,7 +78,7 @@ DESCRIPTION
     difference between start and prefix in the earlier example. If you
     specify -r 'start' 'prefix', the first lines will match.
 
-        $ %[1]v -w 90 f1.txt f2.txt 
+        $ %[1]v -w 90 f1.txt f2.txt
 
                test/file04a.txt                              test/file05a.txt
              1 prefix                                      1 prefix
@@ -263,6 +263,10 @@ EXAMPLES
     #            where the time stamp looks like this:
     #                2017-10-02 23:01:57.2734743
     $ %[1]v -r '\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+' 'yyyy-mm-dd HH:MM:SS.ssssss'
+
+    # Example 6: Show the extended colors available from the
+    #            ANSI 256 color terminal tables.
+    $ %[1]v --256
 
 VERSION
     v%[2]v
