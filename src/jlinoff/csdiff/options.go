@@ -109,6 +109,9 @@ func getopts() (opts options) {
 	for i := 1; i < len(os.Args); i++ {
 		opt := os.Args[i]
 		switch opt {
+		case "--256":
+			termcolors.Print256ColorTables()
+			os.Exit(0)
 		case "-h", "--help":
 			help()
 		case "-c", "--color-map":

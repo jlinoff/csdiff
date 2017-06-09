@@ -19,7 +19,7 @@ type TermAnsiAttrType int
 // TermAnsiAttrTypes is a list of attr types.
 type TermAnsiAttrTypes []TermAnsiAttrType
 
-// Terminal attribute contants.
+// Terminal attribute constants.
 const (
 	SetBold        TermAnsiAttrType = 1
 	SetDim                          = 2
@@ -222,4 +222,111 @@ func (ti TermInfoType) Set(attrs ...TermAnsiAttrType) {
 // It is shorthand for ti.Set(Reset).
 func (ti TermInfoType) Reset() {
 	ti.Set(Reset)
+}
+
+// SetFgColor256 sets the terminal foreground color to one of
+// the possible 256 colors. Use Reset256 to reset.
+// CITATION: https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+func SetFgColor256(color int) {
+	if color >= 0 && color <= 255 {
+		fmt.Printf("\x1b[38;5;%dm", color)
+	}
+}
+
+// SetBgColor256 sets the terminal background color to one of
+// the possible 256 colors. Use Reset256 to reset.
+// CITATION: https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+func SetBgColor256(color int) {
+	if color >= 0 && color <= 255 {
+		fmt.Printf("\x1b[48;5;%dm", color)
+	}
+}
+
+// Reset256 resets the terminal color back to the defaults.
+func Reset256() {
+	fmt.Printf("\x1b[0m]")
+}
+
+// Print256ColorTables prints out the 256 color tables for foreground and
+// background colors.
+func Print256ColorTables() {
+	// Map when to use reverse video.
+	m := map[int]bool{
+		0: true, 1: true, 2: true, 3: true, 4: true, 5: true, 6: true, 8: true,
+		12: true, 16: true, 17: true, 18: true, 19: true, 20: true, 21: true,
+		52: true, 53: true, 54: true, 55: true, 56: true, 57: true,
+		232: true, 233: true, 234: true, 235: true,
+		236: true, 237: true, 238: true, 239: true,
+		240: true, 241: true, 242: true, 243: true}
+
+	// ================================================================
+	// 8 color mode - background
+	// ================================================================
+	fmt.Print("\n")
+	fmt.Println("8 Color Mode - Background (ESC[40m .. ESC[47m)")
+	fmt.Print("   ")
+	fmt.Printf("\x1b[%d;37;1m %-7s \x1b[0m", 40, "Black")
+	fmt.Printf("\x1b[%d;37;1m %-7s \x1b[0m", 41, "Red")
+	fmt.Printf("\x1b[%d;37;1m %-7s \x1b[0m", 42, "Green")
+	fmt.Printf("\x1b[%d;37;1m %-7s \x1b[0m", 43, "Yellow")
+	fmt.Printf("\x1b[%d;37;1m %-7s \x1b[0m", 44, "Blue")
+	fmt.Printf("\x1b[%d;37;1m %-7s \x1b[0m", 45, "Magenta")
+	fmt.Printf("\x1b[%d;37;1m %-7s \x1b[0m", 46, "Cyan")
+	fmt.Printf("\x1b[%d;30;1m %-7s \x1b[0m", 47, "White")
+	fmt.Print("\n")
+
+	// ================================================================
+	// 8 color mode - foreground
+	// ================================================================
+	fmt.Print("\n")
+	fmt.Println("8 Color Mode - Foreground (ESC[30m .. ESC[37m)")
+	fmt.Print("   ")
+	fmt.Printf("\x1b[%d;47;1m %-7s \x1b[0m", 30, "Black")
+	fmt.Printf("\x1b[%d;47;1m %-7s \x1b[0m", 31, "Red")
+	fmt.Printf("\x1b[%d;47;1m %-7s \x1b[0m", 32, "Green")
+	fmt.Printf("\x1b[%d;47;1m %-7s \x1b[0m", 33, "Yellow")
+	fmt.Printf("\x1b[%d;47;1m %-7s \x1b[0m", 34, "Blue")
+	fmt.Printf("\x1b[%d;47;1m %-7s \x1b[0m", 35, "Magenta")
+	fmt.Printf("\x1b[%d;47;1m %-7s \x1b[0m", 36, "Cyan")
+	fmt.Printf("\x1b[%d;40;1m %-7s \x1b[0m", 37, "White")
+	fmt.Print("\n")
+
+	// ================================================================
+	// 256 color mode - background
+	// ================================================================
+	fmt.Print("\n")
+	fmt.Print("256 Color Mode - Background (ESC[48;5;Nm)")
+	for i := 0; i < 256; i++ {
+		if (i % 16) == 0 {
+			fmt.Printf("\n   ")
+		}
+		v, ok := m[i]
+		if ok && v {
+			fmt.Print("\x1b[37m")
+		} else {
+			fmt.Print("\x1b[30m")
+		}
+		fmt.Printf("\x1b[48;5;%dm %3d \x1b[0m", i, i)
+	}
+	fmt.Print("\n")
+
+	// ================================================================
+	// 256 color mode - foreground
+	// ================================================================
+	fmt.Print("\n")
+	fmt.Print("256 Color Mode - Foreground (ESC[38;5;Nm)")
+	for i := 0; i < 256; i++ {
+		if (i % 16) == 0 {
+			fmt.Printf("\n   ")
+		}
+		v, ok := m[i]
+		if ok && v {
+			fmt.Print("\x1b[47;1m")
+		} else {
+			fmt.Print("\x1b[40;1m")
+		}
+		fmt.Printf("\x1b[38;5;%dm %3d \x1b[0m", i, i)
+	}
+	fmt.Print("\n")
+	fmt.Print("\n")
 }

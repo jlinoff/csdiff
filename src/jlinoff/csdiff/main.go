@@ -8,7 +8,7 @@ package main
 
 import "fmt"
 
-var version = "0.4.2"
+var version = "0.4.3"
 
 func main() {
 	opts := getopts()

@@ -95,6 +95,11 @@ DESCRIPTION
     replaced by prefix.
 
 OPTIONS
+    --256       Print the ANSI terminal 256 color table color
+                values for foreground and background and exit.
+                This is useful for determing which extended
+                colors work for your terminals.
+
     -c COLOR_VAL, --color-map COLOR_VAL
                 Specify a color value for a diff condition.
                 The syntax is COND=ATTR1[,[ATTR2[,ATTR3]]].
