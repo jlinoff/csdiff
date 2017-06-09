@@ -13,16 +13,16 @@
 # You can use the make "linux" command on linux as well if you have
 # docker but do not have go installed.
 #
-OS = $(shell uname -s)
-MACH = $(shell uname -m)
-OS_DIR = $(OS)-$(MACH)
+GOOS = $(shell uname -s | tr '[:upper:]' '[:lower:]')
+GOARCH = "amd64"
+OS_DIR = "$(GOOS)_$(GOARCH)"
 BIN_DIR = bin/$(OS_DIR)
 PROG = $(BIN_DIR)/csdiff
 
 all: $(PROG) test
 
 # Make the release executables.
-rel: rel/csdiff-mac.zip rel/csdiff-x64.tar.gz
+rel: rel/csdiff-darwin.zip rel/csdiff-linux.tar.gz
 
 build: $(PROG)
 
@@ -31,7 +31,7 @@ clean:
 	rm -rf bin pkg rel
 
 # Package the Mac executable into a zip file for release.
-rel/csdiff-mac.zip: bin/Darwin-x86_64/csdiff
+rel/csdiff-mac.zip: bin/darwin_amd64/csdiff
 	@[ ! -d $(dir $@) ] && mkdir -p $(dir $@) || true
 	@rm -f $@
 	cp $< $(dir $@)/csdiff
@@ -41,7 +41,7 @@ rel/csdiff-mac.zip: bin/Darwin-x86_64/csdiff
 	@unzip -l $@
 
 # Package the Linux executable into a tar file for release.
-rel/csdiff-x64.tar.gz: bin/Linux-x86_64/csdiff
+rel/csdiff-x64.tar.gz: bin/linux_amd64/csdiff
 	@[ ! -d $(dir $@) ] && mkdir -p $(dir $@) || true
 	@rm -f $@
 	@rm -f $(dir $@)/csdiff
