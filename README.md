@@ -11,6 +11,7 @@ side by side diff tool with colorization and regular expression support for filt
 5. [Installation](#installation)
 6. [Modification](#modification)
 7. [About](#about)
+8. [TODO](#todo)
 
 <a name="introduction"></a>
 ## Introduction
@@ -314,3 +315,17 @@ editors on Mac OSX 10.12.5.
 It has been tested on Mac OS X 10.12.5, CentOS 7 and CentOS 6.
 
 Suggestions and improvements are greatly appreciated.
+
+<a name="todo"></a>
+## TODO
+
+### Add ANSI 256 color support.
+
+I added the `--256` option to show the available colors. Will add support for to use them soon.
+
+Here is what the `--256` output looks like.
+
+```bash
+$ csdiff --256
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://user-images.githubusercontent.com/2991242/26957671-6ac182e6-4c7b-11e7-80c3-495d098ad811.png" alt="example-256">
