@@ -8,6 +8,7 @@ import (
 	"jlinoff/termcolors"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -159,13 +160,19 @@ func getopts() (opts options) {
 		default:
 			if len(opts.File1) == 0 {
 				opts.File1 = opt
-				if _, err := os.Stat(opt); os.IsNotExist(err) {
+				if fi, err := os.Stat(opt); os.IsNotExist(err) {
 					log.Fatalf("file does not exist: '%v'", opt)
+				} else if fi.Mode().IsDir() {
+					log.Fatalf("cannot csdiff a directory: '%v'", opt)
 				}
 			} else if len(opts.File2) == 0 {
 				opts.File2 = opt
-				if _, err := os.Stat(opt); os.IsNotExist(err) {
+				if fi, err := os.Stat(opt); os.IsNotExist(err) {
 					log.Fatalf("file does not exist: '%v'", opt)
+				} else if fi.Mode().IsDir() {
+					// If this is a directory, append the basename
+					// of the original file.
+					opts.File2 = path.Join(opt, path.Base(opts.File1))
 				}
 			} else {
 				log.Fatalf("too many arguments specified")
